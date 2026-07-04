@@ -1,0 +1,19 @@
+{
+  "name": "sohib-ai",
+  "version": "1.0.0",
+  "description": "Your AI Companion • Your Life OS (Cloudflare Powered PWA)",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute sohibai-db --remote --file=./schema.sql"
+  },
+  "keywords": ["ai", "companion", "cloudflare", "pwa", "llm", "vectorize"],
+  "author": "SohibAI Open Source Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260704.0",
+    "typescript": "^5.5.0",
+    "wrangler": "^3.60.0"
+  }
+}

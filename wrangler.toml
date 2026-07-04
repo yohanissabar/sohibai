@@ -1,0 +1,17 @@
+name = "sohib-ai"
+main = "src/index.ts"
+compatibility_date = "2026-07-04"
+
+assets = { directory = "./public" }
+
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "MEMORY"
+index_name = "sohibai-memory"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sohibai-db"
+database_id = "MASUKKAN_DATABASE_ID_D1_ANDA_DI_SINI"
