@@ -51,3 +51,5 @@ Pastikan Anda sudah menginstal:
 git clone [https://github.com/username-kamu/sohibai.git](https://github.com/username-kamu/sohibai.git)
 cd sohibai
 npm install
+
+sample app.; https://sohib-ai.yohanis-subden1a3.workers.dev/
