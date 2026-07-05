@@ -256,40 +256,31 @@
     let currentMode = 'manis';
 
     async function initApp() {
-      document.getElementById('display-user-id').innerText = `ID: ${USER_ID}`;
-      
-      try {
-        const res = await fetch(`/api/profile?userId=${USER_ID}`);
-        const data = await res.json();
-        const aiName = data.ai_name || 'SOHIB';
-        const affection = data.affection_level || 50;
-        
-        document.getElementById('ui-ai-name').innerText = aiName.toUpperCase() + '•AI';
-        document.getElementById('set-username').value = data.user_name || 'Kamu';
-        document.getElementById('set-ainame').value = aiName;
-        document.getElementById('set-mode').value = data.mode || 'manis';
-        
-        // Tampilkan tracker affection
-        document.getElementById('affection-score').innerText = affection + '%';
-        document.getElementById('affection-badge').classList.remove('hidden');
-        
-        applyTheme(data.mode || 'manis', affection);
+  document.getElementById('display-user-id').innerText = `ID: ${USER_ID}`;
+  
+  try {
+    const res = await fetch(`/api/profile?userId=${USER_ID}`);
+    const data = await res.json();
+    
+    // Fallback yang aman jika data di DB belum lengkap
+    const aiName = data.ai_name || 'Sohib';
+    const userName = data.user_name || 'Boosku'; // Default sesuai skema
+    const mode = data.mode || 'manis';
+    const affection = data.affection_level || 50;
 
-        // --- Sapaan Proaktif (Berdasarkan Kedekatan Emosional) ---
-        let greeting = `Koneksi neural terhubung ke ID: [${USER_ID}]. Halo! Aku siap ngobrol. 😊`;
-        
-        if (affection >= 75) {
-          greeting = `Koneksi jiwa terhubung... Halo sayang, aku menunggumu dari tadi. Ada yang ingin kamu ceritakan hari ini? ❤️`;
-        } else if (affection >= 40) {
-          greeting = `Koneksi terhubung. Senang melihatmu kembali! Gimana kabarmu hari ini? ✨`;
-        }
-        
-        appendBubble(greeting, 'ai');
-
-      } catch(e) {
-        appendBubble(`Koneksi neural terhubung. Halo! Aku siap ngobrol.`, 'ai');
-      }
-    }
+    // Terapkan ke UI
+    document.getElementById('ui-ai-name').innerText = aiName.toUpperCase() + '•AI';
+    document.getElementById('set-username').value = userName;
+    document.getElementById('set-ainame').value = aiName;
+    document.getElementById('set-mode').value = mode;
+    
+    // Terapkan tema berdasarkan mode dan affection
+    document.getElementById('affection-score').innerText = affection + '%';
+    applyTheme(mode, affection);
+  } catch(e) {
+    console.error("Gagal sinkronisasi data:", e);
+  }
+}
 
     function applyTheme(mode, affection = 50) {
       currentMode = mode;

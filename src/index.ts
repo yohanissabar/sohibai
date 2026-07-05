@@ -15,9 +15,9 @@ export default {
     }
 
     // 2. Route: GET /api/profile
-    if (url.pathname === "/api/profile" && request.method === "GET") {
-      const userId = url.searchParams.get("userId") || "anonymous";
-      const profile = await env.DB.prepare("SELECT * FROM user_profile WHERE id = ?").bind(userId).first();
+    if (url.pathname === "/api/profile" && request.method === "POST") {
+  const { userId, user_name, ai_name, mode } = await request.json() as any;
+  const id = userId || "anonymous";
       // Mengirimkan affection_level ke frontend jika dibutuhkan
       return Response.json(profile || { user_name: "Kamu", ai_name: "Sohib", mode: "manis", affection_level: 50 });
     }
@@ -28,13 +28,14 @@ export default {
       const id = userId || "anonymous";
 
       await env.DB.prepare(
-        `INSERT INTO user_profile (id, user_name, ai_name, mode, updated_at, affection_level)
-         VALUES (?, ?, ?, ?, ?, 50)
-         ON CONFLICT(id) DO UPDATE SET user_name = ?, ai_name = ?, mode = ?, updated_at = ?`
-      ).bind(id, user_name, ai_name, mode, Date.now(), user_name, ai_name, mode, Date.now()).run();
+    `INSERT INTO user_profile (id, user_name, ai_name, mode, updated_at, affection_level)
+     VALUES (?, ?, ?, ?, ?, 50)
+     ON CONFLICT(id) DO UPDATE SET 
+     user_name = ?, ai_name = ?, mode = ?, updated_at = ?`
+  ).bind(id, user_name, ai_name, mode, Date.now(), user_name, ai_name, mode, Date.now()).run();
 
-      return Response.json({ success: true });
-    }
+  return Response.json({ success: true });
+}
 
     // 4. Route: POST /api/chat
     if (url.pathname === "/api/chat" && request.method === "POST") {
