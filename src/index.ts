@@ -16,31 +16,45 @@ export default {
 
     // 2. Route: GET /api/profile
     if (url.pathname === "/api/profile" && request.method === "GET") {
-      const profile = await env.DB.prepare("SELECT * FROM user_profile WHERE id = 'default'").first();
+      const userId = url.searchParams.get("userId") || "anonymous";
+      const profile = await env.DB.prepare("SELECT * FROM user_profile WHERE id = ?").bind(userId).first();
       return Response.json(profile || { user_name: "Kamu", ai_name: "Sohib", mode: "manis" });
     }
 
     // 3. Route: POST /api/profile
     if (url.pathname === "/api/profile" && request.method === "POST") {
-      const { user_name, ai_name, mode } = await request.json() as any;
+      const { userId, user_name, ai_name, mode } = await request.json() as any;
+      const id = userId || "anonymous";
+      
+      // Menggunakan UPSERT agar jika user baru, data di-insert. Jika lama, di-update.
+      // *Pastikan kolom 'id' di tabel user_profile sudah diatur sebagai PRIMARY KEY atau UNIQUE constraint
       await env.DB.prepare(
-        "UPDATE user_profile SET user_name = ?, ai_name = ?, mode = ?, updated_at = ? WHERE id = 'default'"
-      ).bind(user_name, ai_name, mode, Date.now()).run();
+        `INSERT INTO user_profile (id, user_name, ai_name, mode, updated_at) 
+         VALUES (?, ?, ?, ?, ?) 
+         ON CONFLICT(id) DO UPDATE SET user_name = ?, ai_name = ?, mode = ?, updated_at = ?`
+      ).bind(id, user_name, ai_name, mode, Date.now(), user_name, ai_name, mode, Date.now()).run();
+      
       return Response.json({ success: true });
     }
 
     // 4. Route: POST /api/chat
     if (url.pathname === "/api/chat" && request.method === "POST") {
-      const { message } = await request.json() as { message: string };
+      const { userId, message } = await request.json() as any;
+      const id = userId || "anonymous";
 
-      const profile: any = await env.DB.prepare("SELECT * FROM user_profile WHERE id = 'default'").first();
+      const profile: any = await env.DB.prepare("SELECT * FROM user_profile WHERE id = ?").bind(id).first();
       const userName = profile?.user_name || "Kamu";
       const aiName = profile?.ai_name || "Sohib";
       const mode = profile?.mode || "manis";
 
       // Menggunakan bge-large-en-v1.5 untuk embedding memori
       const embeddingReq = await env.AI.run("@cf/baai/bge-large-en-v1.5", { text: [message] });
-      const vectorQuery = await env.MEMORY.query(embeddingReq.data[0], { topK: 3 });
+      
+      // Filter vector memory berdasarkan userId
+      const vectorQuery = await env.MEMORY.query(embeddingReq.data[0], { 
+        topK: 3,
+        filter: { userId: id } 
+      });
 
       let longTermMemories = "";
       if (vectorQuery.matches && vectorQuery.matches.length > 0) {
@@ -50,7 +64,8 @@ export default {
           .join("\n- ");
       }
 
-      const recentChats = await env.DB.prepare("SELECT sender, message FROM chat_history ORDER BY id DESC LIMIT 4").all();
+      // Ambil chat history HANYA untuk user ini
+      const recentChats = await env.DB.prepare("SELECT sender, message FROM chat_history WHERE user_id = ? ORDER BY id DESC LIMIT 4").bind(id).all();
       const chatContext = recentChats.results ? recentChats.results.reverse().map((c: any) => `${c.sender === 'user' ? userName : aiName}: ${c.message}`).join("\n") : "";
 
       // INSTRUKSI KEPRIBADIAN BARU (NORMAL, RAMAH, DAN BEBAS CRINGE)
@@ -85,10 +100,11 @@ ATURAN WAJIB (SANGAT PENTING):
       const reply = aiResponse.response;
 
       ctx.waitUntil((async () => {
-        await env.DB.prepare("INSERT INTO chat_history (sender, message, timestamp) VALUES (?, ?, ?)")
-          .bind("user", message, Date.now()).run();
-        await env.DB.prepare("INSERT INTO chat_history (sender, message, timestamp) VALUES (?, ?, ?)")
-          .bind("ai", reply, Date.now()).run();
+        // Simpan histori chat dengan menyertakan user_id
+        await env.DB.prepare("INSERT INTO chat_history (user_id, sender, message, timestamp) VALUES (?, ?, ?, ?)")
+          .bind(id, "user", message, Date.now()).run();
+        await env.DB.prepare("INSERT INTO chat_history (user_id, sender, message, timestamp) VALUES (?, ?, ?, ?)")
+          .bind(id, "ai", reply, Date.now()).run();
 
         const extractPrompt = `Analisis pesan user berikut: "${message}".
 Apakah user mengungkapkan fakta pribadi permanen (seperti hobi, makanan kesukaan, ketakutan, rahasia, pekerjaan, nama teman, atau perasaan penting)?
@@ -104,9 +120,10 @@ Jika TIDAK ada fakta penting, jawab HANYA kata: SKIP.`;
           const memoryFact = extText.replace("FAKTA:", "").trim();
           const factEmbedding = await env.AI.run("@cf/baai/bge-large-en-v1.5", { text: [memoryFact] });
           await env.MEMORY.upsert([{
-            id: `mem_${Date.now()}`,
+            id: `mem_${Date.now()}_${id.substring(0,6)}`, // Id unik gabungan timestamp & id user
             values: factEmbedding.data[0],
-            metadata: { text: memoryFact, timestamp: Date.now() }
+            // Sisipkan userId di metadata agar bisa difilter per user saat query vector
+            metadata: { userId: id, text: memoryFact, timestamp: Date.now() }
           }]);
         }
       })());

@@ -4,15 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SohibAI • Live Neural Link</title>
-  
+
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#050505">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Global Sci-Fi Aesthetic */
     body {
       background: radial-gradient(circle at 50% 20%, #15151f 0%, #050505 80%);
       font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -20,45 +19,32 @@
       overflow: hidden;
     }
 
-    /* Custom Scrollbar for Chat Box */
     #chat-container::-webkit-scrollbar { width: 4px; }
     #chat-container::-webkit-scrollbar-track { background: transparent; }
     #chat-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
-    /* Video Call Hologram Frame */
     .videocall-frame {
       position: relative;
       background: radial-gradient(circle, rgba(20,20,30,0.8) 0%, rgba(5,5,10,0.95) 100%);
       border-bottom: 1px solid rgba(255,255,255,0.08);
       box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
     }
-    
-    /* Cyberpunk Grid Overlay on Video */
+
     .videocall-grid {
-      background-image: 
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
       background-size: 25px 25px;
     }
 
-    /* Holographic Glows */
     .glow-manis { box-shadow: 0 0 35px rgba(244, 114, 182, 0.25), inset 0 0 15px rgba(244, 114, 182, 0.15); border-color: rgba(244, 114, 182, 0.5); }
     .glow-gagah { box-shadow: 0 0 35px rgba(34, 211, 238, 0.25), inset 0 0 15px rgba(34, 211, 238, 0.15); border-color: rgba(34, 211, 238, 0.5); }
 
-    /* Avatar Expressive Animations */
     .eye-blink { animation: blink 4.5s infinite; transform-origin: center; }
     @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.05); } }
-    
     .talking .mouth { animation: speak 0.18s infinite alternate ease-in-out; }
-    @keyframes speak { 
-      0% { transform: scaleY(0.4) scaleX(0.9) translateY(65px); } 
-      100% { transform: scaleY(2.2) scaleX(1.1) translateY(65px); } 
-    }
-
+    @keyframes speak { 0% { transform: scaleY(0.4) scaleX(0.9) translateY(65px); } 100% { transform: scaleY(2.2) scaleX(1.1) translateY(65px); } }
     .talking #avatar-pulse { animation: radar 1s infinite linear; opacity: 1; }
     @keyframes radar { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
 
-    /* Audio Waveform Bars (Active when AI speaks) */
     .wave-bar { transition: height 0.1s ease; }
     .talking .wave-bar:nth-child(1) { animation: bounce 0.4s infinite alternate; }
     .talking .wave-bar:nth-child(2) { animation: bounce 0.25s infinite alternate 0.1s; }
@@ -66,7 +52,6 @@
     .talking .wave-bar:nth-child(4) { animation: bounce 0.2s infinite alternate 0.15s; }
     @keyframes bounce { 0% { height: 4px; } 100% { height: 22px; } }
 
-    /* Modern WhatsApp Style Bubbles */
     .chat-bubble {
       position: relative;
       max-width: 82%;
@@ -77,7 +62,7 @@
       animation: slideUp 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
     }
     @keyframes slideUp { 0% { opacity: 0; transform: translateY(12px) scale(0.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-    
+
     .bubble-user {
       background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
       color: white;
@@ -85,7 +70,6 @@
       align-self: flex-end;
       box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
     }
-    
     .bubble-ai {
       background: rgba(28, 28, 32, 0.85);
       backdrop-filter: blur(8px);
@@ -95,10 +79,8 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
-
     .bubble-time { font-size: 0.62rem; opacity: 0.55; margin-top: 4px; display: block; text-align: right; }
-
-    /* Floating Sci-Fi Input Bar */
+    
     .input-bar {
       background: rgba(18, 18, 22, 0.88);
       backdrop-filter: blur(16px);
@@ -109,6 +91,18 @@
 </head>
 <body class="text-white flex flex-col h-screen max-w-md mx-auto relative select-none">
 
+  <div id="login-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-6 transition-opacity hidden">
+    <div class="bg-zinc-900 border border-white/10 p-8 rounded-3xl w-full max-w-sm space-y-6 shadow-2xl text-center">
+      <div class="space-y-2">
+        <h2 class="text-2xl font-bold bg-gradient-to-r from-pink-400 to-blue-500 bg-clip-text text-transparent">Neural Link Init</h2>
+        <p class="text-[13px] text-gray-400">Buat atau masukkan ID Rahasia kamu.<br>Ingat ID ini agar obrolan & memorimu bisa dipulihkan jika pindah HP.</p>
+      </div>
+      <div>
+        <input type="text" id="login-id" placeholder="Contoh: andi2026" autocomplete="off" class="w-full bg-black border border-white/20 rounded-xl p-3 text-sm focus:border-blue-500 focus:outline-none text-center font-mono tracking-wider">
+      </div>
+      <button onclick="startSession()" class="w-full py-3 bg-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-500 shadow-lg shadow-blue-600/30 transition-all active:scale-95">Mulai Terhubung</button>
+    </div>
+  </div>
   <div class="videocall-frame h-64 flex flex-col justify-between p-4 relative overflow-hidden flex-shrink-0">
     <div class="absolute inset-0 videocall-grid opacity-60 pointer-events-none"></div>
 
@@ -124,7 +118,6 @@
 
     <div class="flex flex-col items-center justify-center my-auto relative z-10">
       <div id="avatar-pulse" class="absolute w-36 h-36 rounded-full border border-pink-500/40 opacity-0 pointer-events-none transition-all"></div>
-      
       <div id="face-container" class="w-28 h-28 rounded-full border-2 flex items-center justify-center bg-black/80 transition-all duration-500 glow-manis relative">
         <svg id="robot-face" viewBox="0 0 100 100" class="w-16 h-16 text-white fill-current transition-transform duration-300">
           <g class="eye-blink origin-center">
@@ -149,11 +142,7 @@
   </div>
 
   <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col bg-black/40">
-    <div class="chat-bubble bubble-ai">
-      Koneksi video tersambung! Aku mendengarkanmu. Ada hal seru atau masalah yang ingin kamu bahas hari ini? 😊
-      <span class="bubble-time">Sistem</span>
     </div>
-  </div>
 
   <div id="typing-indicator" class="px-5 py-1 text-[11px] text-pink-400/80 font-mono hidden bg-black/60">
     <span class="inline-block animate-pulse">▶ SOHIB AI sedang mentransmisikan pesan...</span>
@@ -161,20 +150,18 @@
 
   <div class="p-3 bg-gradient-to-t from-black via-black/80 to-transparent flex-shrink-0">
     <form id="chat-form" class="flex items-center space-x-1 input-bar p-1.5 shadow-2xl">
-      <button type="button" id="mic-btn" class="p-2.5 text-gray-400 hover:text-white transition rounded-full hover:bg-white/10 flex-shrink-0">
-        🎤
-      </button>
-      <input type="text" id="user-input" placeholder="Ketik pesan pesan neural..." autocomplete="off"
-        class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none text-white placeholder-gray-500">
-      <button type="submit" id="send-btn" class="p-2.5 bg-blue-600 rounded-full text-white font-medium hover:bg-blue-500 transition active:scale-95 flex-shrink-0 shadow-lg shadow-blue-600/30">
-        ➤
-      </button>
+      <button type="button" id="mic-btn" class="p-2.5 text-gray-400 hover:text-white transition rounded-full hover:bg-white/10 flex-shrink-0">🎤</button>
+      <input type="text" id="user-input" placeholder="Ketik pesan neural..." autocomplete="off" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none text-white placeholder-gray-500">
+      <button type="submit" id="send-btn" class="p-2.5 bg-blue-600 rounded-full text-white font-medium hover:bg-blue-500 transition active:scale-95 flex-shrink-0 shadow-lg shadow-blue-600/30">➤</button>
     </form>
   </div>
 
   <div id="settings-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-6">
     <div class="bg-zinc-900 border border-white/10 p-6 rounded-3xl w-full max-w-sm space-y-4 shadow-2xl">
-      <h3 class="font-bold text-lg border-b border-white/10 pb-2">Konfigurasi Sistem AI</h3>
+      <h3 class="font-bold text-lg border-b border-white/10 pb-2 flex justify-between">
+        Konfigurasi Sistem
+        <span id="display-user-id" class="text-[10px] text-gray-500 font-mono bg-black px-2 py-1 rounded">ID: --</span>
+      </h3>
       <div>
         <label class="text-xs text-gray-400">Nama Kamu</label>
         <input type="text" id="set-username" class="w-full bg-black border border-white/20 rounded-xl p-2.5 mt-1 text-sm focus:border-blue-500 focus:outline-none">
@@ -186,23 +173,56 @@
       <div>
         <label class="text-xs text-gray-400">Karakter & Kepribadian</label>
         <select id="set-mode" class="w-full bg-black border border-white/20 rounded-xl p-2.5 mt-1 text-sm focus:border-blue-500 focus:outline-none">
-          <option value="manis">🌸 Manis & Suportif (Perempuan)</option>
-          <option value="gagah">⚡ Gagah & Protektif (Laki-laki)</option>
+          <option value="manis"> 🌸 Manis & Suportif (Perempuan)</option>
+          <option value="gagah"> ⚡ Gagah & Protektif (Laki-laki)</option>
         </select>
       </div>
       <div class="flex space-x-2 pt-2">
         <button type="button" onclick="toggleModal(false)" class="flex-1 py-2.5 bg-white/10 rounded-xl text-sm hover:bg-white/20">Batal</button>
         <button type="button" onclick="saveProfile()" class="flex-1 py-2.5 bg-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-500 shadow-lg shadow-blue-600/30">Simpan</button>
       </div>
+      <div class="pt-3 mt-1 border-t border-white/10 text-center">
+        <button type="button" onclick="logoutSession()" class="text-xs text-red-500 hover:text-red-400 transition">⏏ Putuskan Koneksi (Ganti Akun)</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // Register PWA Service Worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-      });
+      window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+    }
+
+    let USER_ID = localStorage.getItem('sohibai_uid');
+    const loginModal = document.getElementById('login-modal');
+    
+    // Auth Check
+    function checkAuth() {
+      if (!USER_ID) {
+        loginModal.classList.remove('hidden');
+      } else {
+        initApp();
+      }
+    }
+
+    // Login logic
+    function startSession() {
+      const inputId = document.getElementById('login-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (inputId.length < 4) {
+        alert("ID harus minimal 4 karakter (hanya huruf & angka).");
+        return;
+      }
+      USER_ID = inputId;
+      localStorage.setItem('sohibai_uid', USER_ID);
+      loginModal.classList.add('hidden');
+      initApp();
+    }
+
+    // Logout logic
+    function logoutSession() {
+      if(confirm("Yakin ingin memutuskan koneksi perangkat ini dari ID " + USER_ID + "?")) {
+        localStorage.removeItem('sohibai_uid');
+        location.reload();
+      }
     }
 
     const face = document.getElementById('face-container');
@@ -213,32 +233,36 @@
     let recognition;
     let currentMode = 'manis';
 
-    async function loadProfile() {
+    async function initApp() {
+      document.getElementById('display-user-id').innerText = `ID: ${USER_ID}`;
+      
       try {
-        const res = await fetch('/api/profile');
+        const res = await fetch(`/api/profile?userId=${USER_ID}`);
         const data = await res.json();
-        document.getElementById('ui-ai-name').innerText = (data.ai_name || 'SOHIB').toUpperCase() + '•AI';
+        const aiName = data.ai_name || 'SOHIB';
+        document.getElementById('ui-ai-name').innerText = aiName.toUpperCase() + '•AI';
         document.getElementById('set-username').value = data.user_name || 'Kamu';
-        document.getElementById('set-ainame').value = data.ai_name || 'Sohib';
+        document.getElementById('set-ainame').value = aiName;
         document.getElementById('set-mode').value = data.mode || 'manis';
         applyTheme(data.mode || 'manis');
-      } catch(e) {}
+        
+        // Sapaan awal yang dinamis
+        appendBubble(`Koneksi neural terhubung ke ID: [${USER_ID}]. Halo! Aku siap ngobrol. 😊`, 'ai');
+      } catch(e) {
+        appendBubble(`Koneksi neural terhubung. Halo! Aku siap ngobrol.`, 'ai');
+      }
     }
-    loadProfile();
 
     function applyTheme(mode) {
       currentMode = mode;
       const isManis = mode === 'manis';
-      
+
       face.className = `w-28 h-28 rounded-full border-2 flex items-center justify-center bg-black/80 transition-all duration-500 relative ${isManis ? 'glow-manis border-pink-500' : 'glow-gagah border-cyan-400'}`;
-      
-      const leftEye = document.getElementById('eye-left');
-      const rightEye = document.getElementById('eye-right');
-      leftEye.style.fill = isManis ? '#f472b6' : '#22d3ee';
-      rightEye.style.fill = isManis ? '#f472b6' : '#22d3ee';
-      
+
+      document.getElementById('eye-left').style.fill = isManis ? '#f472b6' : '#22d3ee';
+      document.getElementById('eye-right').style.fill = isManis ? '#f472b6' : '#22d3ee';
       document.getElementById('ui-mode-text').innerText = isManis ? 'MANIS' : 'GAGAH';
-      
+
       const waveBars = document.querySelectorAll('.wave-bar');
       waveBars.forEach(bar => {
         bar.className = `w-1 rounded-full wave-bar h-1 ${isManis ? 'bg-pink-500' : 'bg-cyan-400'}`;
@@ -246,8 +270,7 @@
     }
 
     function getTimeString() {
-      const now = new Date();
-      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     function appendBubble(text, sender) {
@@ -273,10 +296,10 @@
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
+          body: JSON.stringify({ userId: USER_ID, message: text })
         });
         const data = await res.json();
-        
+
         typingIndicator.classList.add('hidden');
         appendBubble(data.reply, 'ai');
         speakText(data.reply, data.mode || currentMode);
@@ -289,10 +312,7 @@
     function speakText(text, mode) {
       if (!synth) return;
       synth.cancel();
-      
-      // Bersihkan teks dari emoji agar suara robot tidak membaca deskripsi emoji
       const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '');
-      
       const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = 'id-ID';
       utterance.pitch = mode === 'manis' ? 1.25 : 0.85;
@@ -301,23 +321,16 @@
       utterance.onstart = () => robotFace.classList.add('talking');
       utterance.onend = () => robotFace.classList.remove('talking');
       utterance.onerror = () => robotFace.classList.remove('talking');
-      
       synth.speak(utterance);
     }
 
-    // Web Speech API for Mic
     const micBtn = document.getElementById('mic-btn');
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRec();
       recognition.lang = 'id-ID';
-      
-      recognition.onstart = () => { 
-        micBtn.classList.add('text-red-500', 'animate-pulse'); 
-      };
-      recognition.onend = () => { 
-        micBtn.classList.remove('text-red-500', 'animate-pulse'); 
-      };
+      recognition.onstart = () => micBtn.classList.add('text-red-500', 'animate-pulse');
+      recognition.onend = () => micBtn.classList.remove('text-red-500', 'animate-pulse');
       recognition.onresult = (e) => {
         document.getElementById('user-input').value = e.results[0][0].transcript;
         document.getElementById('send-btn').click();
@@ -327,20 +340,18 @@
       micBtn.style.display = 'none';
     }
 
-    function toggleModal(show) {
-      document.getElementById('settings-modal').style.display = show ? 'flex' : 'none';
-    }
+    function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
 
     async function saveProfile() {
       const user_name = document.getElementById('set-username').value;
       const ai_name = document.getElementById('set-ainame').value;
       const mode = document.getElementById('set-mode').value;
-      
+
       try {
         await fetch('/api/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_name, ai_name, mode })
+          body: JSON.stringify({ userId: USER_ID, user_name, ai_name, mode })
         });
       } catch(e) {}
 
@@ -348,6 +359,9 @@
       applyTheme(mode);
       toggleModal(false);
     }
+
+    // Jalankan pengecekan Auth saat halaman dimuat
+    checkAuth();
   </script>
 </body>
 </html>
