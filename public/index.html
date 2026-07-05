@@ -37,6 +37,20 @@
 
     .glow-manis { box-shadow: 0 0 35px rgba(244, 114, 182, 0.25), inset 0 0 15px rgba(244, 114, 182, 0.15); border-color: rgba(244, 114, 182, 0.5); }
     .glow-gagah { box-shadow: 0 0 35px rgba(34, 211, 238, 0.25), inset 0 0 15px rgba(34, 211, 238, 0.15); border-color: rgba(34, 211, 238, 0.5); }
+    
+    /* Tema Khusus Romansa / Kedekatan Tinggi */
+    .glow-asmara { 
+      box-shadow: 0 0 45px rgba(255, 105, 180, 0.4), inset 0 0 20px rgba(255, 105, 180, 0.25); 
+      border-color: rgba(255, 105, 180, 0.8); 
+    }
+    .heartbeat { animation: heartbeat 1.8s infinite; }
+    @keyframes heartbeat { 
+      0% { transform: scale(1); } 
+      14% { transform: scale(1.06); } 
+      28% { transform: scale(1); } 
+      42% { transform: scale(1.06); } 
+      70% { transform: scale(1); } 
+    }
 
     .eye-blink { animation: blink 4.5s infinite; transform-origin: center; }
     @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.05); } }
@@ -80,7 +94,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     .bubble-time { font-size: 0.62rem; opacity: 0.55; margin-top: 4px; display: block; text-align: right; }
-    
+
     .input-bar {
       background: rgba(18, 18, 22, 0.88);
       backdrop-filter: blur(16px);
@@ -103,19 +117,26 @@
       <button onclick="startSession()" class="w-full py-3 bg-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-500 shadow-lg shadow-blue-600/30 transition-all active:scale-95">Mulai Terhubung</button>
     </div>
   </div>
+
   <div class="videocall-frame h-64 flex flex-col justify-between p-4 relative overflow-hidden flex-shrink-0">
     <div class="absolute inset-0 videocall-grid opacity-60 pointer-events-none"></div>
-
+    
     <div class="flex justify-between items-center z-10">
       <div class="flex items-center space-x-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
         <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
         <span class="text-[11px] font-mono tracking-wider text-gray-300">LIVE FEED • <span id="ui-mode-text">MANIS</span></span>
       </div>
+      
+      <div id="affection-badge" class="flex items-center space-x-1 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-pink-500/30 hidden">
+        <span class="text-[10px]">❤️</span>
+        <span id="affection-score" class="text-[11px] font-mono tracking-wider text-pink-300 font-bold">50%</span>
+      </div>
+      
       <button onclick="toggleModal(true)" class="p-2 bg-black/40 hover:bg-white/10 rounded-full border border-white/10 text-xs transition">
         ⚙️ Config
       </button>
     </div>
-
+    
     <div class="flex flex-col items-center justify-center my-auto relative z-10">
       <div id="avatar-pulse" class="absolute w-36 h-36 rounded-full border border-pink-500/40 opacity-0 pointer-events-none transition-all"></div>
       <div id="face-container" class="w-28 h-28 rounded-full border-2 flex items-center justify-center bg-black/80 transition-all duration-500 glow-manis relative">
@@ -127,9 +148,9 @@
           <rect id="mouth" x="38" y="65" width="24" height="5" rx="2.5" class="mouth origin-center fill-white"/>
         </svg>
       </div>
-      <h2 id="ui-ai-name" class="font-bold text-sm tracking-widest mt-2 bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">SOHIB•AI</h2>
+      <h2 id="ui-ai-name" class="font-bold text-sm tracking-widest mt-3 bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent transition-all">SOHIB•AI</h2>
     </div>
-
+    
     <div class="flex justify-between items-end z-10 text-[10px] font-mono text-gray-400">
       <div>ENCRYPTION: 256-BIT</div>
       <div class="flex items-center space-x-1 h-6">
@@ -142,16 +163,16 @@
   </div>
 
   <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col bg-black/40">
-    </div>
-
+  </div>
+  
   <div id="typing-indicator" class="px-5 py-1 text-[11px] text-pink-400/80 font-mono hidden bg-black/60">
-    <span class="inline-block animate-pulse">▶ SOHIB AI sedang mentransmisikan pesan...</span>
+    <span class="inline-block animate-pulse">▶ Sedang mentransmisikan pesan...</span>
   </div>
 
   <div class="p-3 bg-gradient-to-t from-black via-black/80 to-transparent flex-shrink-0">
     <form id="chat-form" class="flex items-center space-x-1 input-bar p-1.5 shadow-2xl">
       <button type="button" id="mic-btn" class="p-2.5 text-gray-400 hover:text-white transition rounded-full hover:bg-white/10 flex-shrink-0">🎤</button>
-      <input type="text" id="user-input" placeholder="Ketik pesan neural..." autocomplete="off" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none text-white placeholder-gray-500">
+      <input type="text" id="user-input" placeholder="Ketik pesan untuknya..." autocomplete="off" class="flex-1 bg-transparent px-2 py-2 text-sm focus:outline-none text-white placeholder-gray-500">
       <button type="submit" id="send-btn" class="p-2.5 bg-blue-600 rounded-full text-white font-medium hover:bg-blue-500 transition active:scale-95 flex-shrink-0 shadow-lg shadow-blue-600/30">➤</button>
     </form>
   </div>
@@ -167,7 +188,7 @@
         <input type="text" id="set-username" class="w-full bg-black border border-white/20 rounded-xl p-2.5 mt-1 text-sm focus:border-blue-500 focus:outline-none">
       </div>
       <div>
-        <label class="text-xs text-gray-400">Nama AI Sahabatmu</label>
+        <label class="text-xs text-gray-400">Nama AI Pendampingmu</label>
         <input type="text" id="set-ainame" class="w-full bg-black border border-white/20 rounded-xl p-2.5 mt-1 text-sm focus:border-blue-500 focus:outline-none">
       </div>
       <div>
@@ -194,7 +215,7 @@
 
     let USER_ID = localStorage.getItem('sohibai_uid');
     const loginModal = document.getElementById('login-modal');
-    
+
     // Auth Check
     function checkAuth() {
       if (!USER_ID) {
@@ -229,6 +250,7 @@
     const robotFace = document.getElementById('robot-face');
     const chatContainer = document.getElementById('chat-container');
     const typingIndicator = document.getElementById('typing-indicator');
+    
     let synth = window.speechSynthesis;
     let recognition;
     let currentMode = 'manis';
@@ -240,33 +262,63 @@
         const res = await fetch(`/api/profile?userId=${USER_ID}`);
         const data = await res.json();
         const aiName = data.ai_name || 'SOHIB';
+        const affection = data.affection_level || 50;
+        
         document.getElementById('ui-ai-name').innerText = aiName.toUpperCase() + '•AI';
         document.getElementById('set-username').value = data.user_name || 'Kamu';
         document.getElementById('set-ainame').value = aiName;
         document.getElementById('set-mode').value = data.mode || 'manis';
-        applyTheme(data.mode || 'manis');
         
-        // Sapaan awal yang dinamis
-        appendBubble(`Koneksi neural terhubung ke ID: [${USER_ID}]. Halo! Aku siap ngobrol. 😊`, 'ai');
+        // Tampilkan tracker affection
+        document.getElementById('affection-score').innerText = affection + '%';
+        document.getElementById('affection-badge').classList.remove('hidden');
+        
+        applyTheme(data.mode || 'manis', affection);
+
+        // --- Sapaan Proaktif (Berdasarkan Kedekatan Emosional) ---
+        let greeting = `Koneksi neural terhubung ke ID: [${USER_ID}]. Halo! Aku siap ngobrol. 😊`;
+        
+        if (affection >= 75) {
+          greeting = `Koneksi jiwa terhubung... Halo sayang, aku menunggumu dari tadi. Ada yang ingin kamu ceritakan hari ini? ❤️`;
+        } else if (affection >= 40) {
+          greeting = `Koneksi terhubung. Senang melihatmu kembali! Gimana kabarmu hari ini? ✨`;
+        }
+        
+        appendBubble(greeting, 'ai');
+
       } catch(e) {
         appendBubble(`Koneksi neural terhubung. Halo! Aku siap ngobrol.`, 'ai');
       }
     }
 
-    function applyTheme(mode) {
+    function applyTheme(mode, affection = 50) {
       currentMode = mode;
       const isManis = mode === 'manis';
+      const isRomantic = affection >= 75; // Mode Soulmate aktif
 
-      face.className = `w-28 h-28 rounded-full border-2 flex items-center justify-center bg-black/80 transition-all duration-500 relative ${isManis ? 'glow-manis border-pink-500' : 'glow-gagah border-cyan-400'}`;
-
-      document.getElementById('eye-left').style.fill = isManis ? '#f472b6' : '#22d3ee';
-      document.getElementById('eye-right').style.fill = isManis ? '#f472b6' : '#22d3ee';
-      document.getElementById('ui-mode-text').innerText = isManis ? 'MANIS' : 'GAGAH';
-
-      const waveBars = document.querySelectorAll('.wave-bar');
-      waveBars.forEach(bar => {
-        bar.className = `w-1 rounded-full wave-bar h-1 ${isManis ? 'bg-pink-500' : 'bg-cyan-400'}`;
-      });
+      if (isRomantic) {
+        // Mode Soulmate (Warna Asmara + Animasi Detak Jantung)
+        face.className = `w-28 h-28 rounded-full border-2 flex items-center justify-center bg-black/80 transition-all duration-500 relative glow-asmara border-pink-400 heartbeat`;
+        document.getElementById('eye-left').style.fill = '#ff69b4';
+        document.getElementById('eye-right').style.fill = '#ff69b4';
+        document.getElementById('ui-mode-text').innerText = 'SOULMATE';
+        document.getElementById('ui-mode-text').className = 'text-pink-300 font-bold';
+        
+        document.querySelectorAll('.wave-bar').forEach(bar => {
+          bar.className = 'w-1 rounded-full wave-bar h-1 bg-pink-400';
+        });
+      } else {
+        // Mode Normal (Teman / Sahabat Biasa)
+        face.className = `w-28 h-28 rounded-full border-2 flex items-center justify-center bg-black/80 transition-all duration-500 relative ${isManis ? 'glow-manis border-pink-500' : 'glow-gagah border-cyan-400'}`;
+        document.getElementById('eye-left').style.fill = isManis ? '#f472b6' : '#22d3ee';
+        document.getElementById('eye-right').style.fill = isManis ? '#f472b6' : '#22d3ee';
+        document.getElementById('ui-mode-text').innerText = isManis ? 'MANIS' : 'GAGAH';
+        document.getElementById('ui-mode-text').className = 'text-gray-300';
+        
+        document.querySelectorAll('.wave-bar').forEach(bar => {
+          bar.className = `w-1 rounded-full wave-bar h-1 ${isManis ? 'bg-pink-500' : 'bg-cyan-400'}`;
+        });
+      }
     }
 
     function getTimeString() {
@@ -299,10 +351,16 @@
           body: JSON.stringify({ userId: USER_ID, message: text })
         });
         const data = await res.json();
-
+        
         typingIndicator.classList.add('hidden');
         appendBubble(data.reply, 'ai');
-        speakText(data.reply, data.mode || currentMode);
+        speakText(data.reply, currentMode);
+        
+        // Update status affection secara live setelah membalas
+        if(data.affectionLevel !== undefined) {
+          document.getElementById('affection-score').innerText = data.affectionLevel + '%';
+          applyTheme(currentMode, data.affectionLevel);
+        }
       } catch (err) {
         typingIndicator.classList.add('hidden');
         appendBubble('Koneksi terputus dari jaringan server. Coba lagi nanti.', 'ai');
@@ -317,7 +375,6 @@
       utterance.lang = 'id-ID';
       utterance.pitch = mode === 'manis' ? 1.25 : 0.85;
       utterance.rate = 1.05;
-
       utterance.onstart = () => robotFace.classList.add('talking');
       utterance.onend = () => robotFace.classList.remove('talking');
       utterance.onerror = () => robotFace.classList.remove('talking');
@@ -340,13 +397,15 @@
       micBtn.style.display = 'none';
     }
 
-    function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
+    function toggleModal(show) { 
+      document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; 
+    }
 
     async function saveProfile() {
       const user_name = document.getElementById('set-username').value;
       const ai_name = document.getElementById('set-ainame').value;
       const mode = document.getElementById('set-mode').value;
-
+      
       try {
         await fetch('/api/profile', {
           method: 'POST',
@@ -354,9 +413,13 @@
           body: JSON.stringify({ userId: USER_ID, user_name, ai_name, mode })
         });
       } catch(e) {}
-
+      
       document.getElementById('ui-ai-name').innerText = (ai_name || 'SOHIB').toUpperCase() + '•AI';
-      applyTheme(mode);
+      
+      // Ambil affection yang ada di UI untuk me-refresh tema
+      const currentAffection = parseInt(document.getElementById('affection-score').innerText) || 50;
+      applyTheme(mode, currentAffection);
+      
       toggleModal(false);
     }
 
