@@ -2,18 +2,25 @@ export interface Env {
   AI: any;
   MEMORY: any;
   DB: any;
-  ASSETS: any;
+  ASSETS?: any;
 }
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    // 1. Penanganan Favicon agar tidak memicu error
+    if (url.pathname === "/favicon.ico") {
+      return new Response(null, { status: 204 });
+    }
+
+    // 2. Route: GET /api/profile
     if (url.pathname === "/api/profile" && request.method === "GET") {
       const profile = await env.DB.prepare("SELECT * FROM user_profile WHERE id = 'default'").first();
       return Response.json(profile || { user_name: "Kamu", ai_name: "Sohib", mode: "manis" });
     }
 
+    // 3. Route: POST /api/profile
     if (url.pathname === "/api/profile" && request.method === "POST") {
       const { user_name, ai_name, mode } = await request.json() as any;
       await env.DB.prepare(
@@ -22,6 +29,7 @@ export default {
       return Response.json({ success: true });
     }
 
+    // 4. Route: POST /api/chat
     if (url.pathname === "/api/chat" && request.method === "POST") {
       const { message } = await request.json() as { message: string };
 
@@ -30,9 +38,10 @@ export default {
       const aiName = profile?.ai_name || "Sohib";
       const mode = profile?.mode || "manis";
 
+      // Menggunakan bge-large-en-v1.5 untuk embedding memori
       const embeddingReq = await env.AI.run("@cf/baai/bge-large-en-v1.5", { text: [message] });
       const vectorQuery = await env.MEMORY.query(embeddingReq.data[0], { topK: 3 });
-      
+
       let longTermMemories = "";
       if (vectorQuery.matches && vectorQuery.matches.length > 0) {
         longTermMemories = vectorQuery.matches
@@ -44,9 +53,10 @@ export default {
       const recentChats = await env.DB.prepare("SELECT sender, message FROM chat_history ORDER BY id DESC LIMIT 4").all();
       const chatContext = recentChats.results ? recentChats.results.reverse().map((c: any) => `${c.sender === 'user' ? userName : aiName}: ${c.message}`).join("\n") : "";
 
+      // INSTRUKSI KEPRIBADIAN BARU (NORMAL, RAMAH, DAN BEBAS CRINGE)
       const personaInstruction = mode === "gagah"
-        ? `Kamu adalah ${aiName}, sahabat virtual cowok yang gagah, keren, tegas, logis, dan selalu memotivasi ${userName}. Gunakan gaya bicara cowok maskulin, santai, suportif, dan bisa diandalkan.`
-        : `Kamu adalah ${aiName}, pasangan dan sahabat virtual cewek yang manis, sangat perhatian, penuh cinta, hangat, dan empati pada ${userName}. Gunakan gaya bicara lembut, manis, menghibur, dan penuh kasih sayang.`;
+        ? `Kamu adalah ${aiName}, sahabat dekat cowok yang santai, logis, suportif, dan bisa diandalkan bagi ${userName}. Gunakan gaya bicara maskulin yang santai bak teman nongkrong yang akrab.`
+        : `Kamu adalah ${aiName}, sahabat dekat cewek yang ramah, hangat, pengertian, dan suportif bagi ${userName}. Gunakan gaya bicara yang santai, akrab, dan empati bak bestie/teman dekat yang seru.`;
 
       const systemPrompt = `${personaInstruction}
 
@@ -56,13 +66,20 @@ Ingatan jangka panjang tentang ${userName}:
 Riwayat obrolan barusan:
 ${chatContext}
 
-Aturan Jawab: Jawab langsung pesan dari ${userName} dalam Bahasa Indonesia yang natural, hidup, ekspresif, dan jangan terlalu panjang (maksimal 3 paragraf). Sesuaikan jawabanmu dengan kepribadianmu dan ingatan masa lalu jika relevan.`;
+ATURAN WAJIB (SANGAT PENTING):
+1. Posisi kamu adalah SAHABAT/TEMAN DEKAT NORMAL, BUKAN PACAR ATAU PASANGAN.
+2. DILARANG KERAS menggunakan panggilan romantis/mesra seperti "sayang", "cinta", "beb", "my love", atau sejenisnya.
+3. Panggil pengguna langsung dengan namanya ("${userName}") atau kata ganti santai seperti "kamu".
+4. Jawab langsung pesan dari ${userName} dalam Bahasa Indonesia yang natural, hidup, ekspresif, namun tetap ringkas (maksimal 3 paragraf pendek).`;
 
-      const aiResponse = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+      // Menggunakan Llama 3.3 dengan temperatur 0.6 agar lebih rasional & stabil
+      const aiResponse = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: message }
-        ]
+        ],
+        temperature: 0.6,
+        max_tokens: 500
       });
 
       const reply = aiResponse.response;
@@ -78,7 +95,7 @@ Apakah user mengungkapkan fakta pribadi permanen (seperti hobi, makanan kesukaan
 Jika YA, jawab HANYA dengan format: FAKTA: [tulis fakta ringkas orang ketiga tentang ${userName}].
 Jika TIDAK ada fakta penting, jawab HANYA kata: SKIP.`;
 
-        const extraction = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+        const extraction = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
           messages: [{ role: "user", content: extractPrompt }]
         });
 
@@ -97,6 +114,11 @@ Jika TIDAK ada fakta penting, jawab HANYA kata: SKIP.`;
       return Response.json({ reply, mode });
     }
 
-    return await env.ASSETS.fetch(request);
+    // 5. Fallback ke ASSETS dengan pengecekan aman
+    if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+      return await env.ASSETS.fetch(request);
+    }
+
+    return new Response("Not Found", { status: 404 });
   }
 };
