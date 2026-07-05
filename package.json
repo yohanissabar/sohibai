@@ -8,12 +8,19 @@
     "deploy": "wrangler deploy",
     "db:init": "wrangler d1 execute sohibai-db --remote --file=./schema.sql"
   },
-  "keywords": ["ai", "companion", "cloudflare", "pwa", "llm", "vectorize"],
+  "keywords": [
+    "ai",
+    "companion",
+    "cloudflare",
+    "pwa",
+    "llm",
+    "vectorize"
+  ],
   "author": "SohibAI Open Source Team",
   "license": "MIT",
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260704.0",
-    "typescript": "^5.5.0",
-    "wrangler": "^3.60.0"
+    "@cloudflare/workers-types": "^5.20260704.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.107.0"
   }
 }
